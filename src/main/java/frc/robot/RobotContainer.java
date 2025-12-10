@@ -47,10 +47,10 @@ public class RobotContainer {
 	 */
 	private void configureSwerveInputs() {
 		driveAngularVelocity = SwerveInputStream.of(m_SwerveSubsystem.getDrive(),
-													() -> m_driverController.getLeftX(),
-													() -> m_driverController.getLeftY() * -1)
+													() -> m_driverController.getLeftY() * -1,
+													() -> m_driverController.getLeftX() * -1)
 												.withControllerRotationAxis(m_driverController::getRightX)
-												.deadband(0.1)
+												.deadband(0.5)
 												.scaleTranslation(0.8)
 												.allianceRelativeControl(true);
 		driveDirectAngle = driveAngularVelocity.copy().withControllerHeadingAxis(
@@ -59,8 +59,8 @@ public class RobotContainer {
 																				)
 																				.headingWhile(true);
 		driveRobotOriented = driveAngularVelocity.copy()
-														.robotRelative(true)
-														.allianceRelativeControl(false);
+														.robotRelative(false)
+														.allianceRelativeControl(true);
 	}
 
 	/**
@@ -74,9 +74,8 @@ public class RobotContainer {
 	 */
 	private void configureBindings() {
 		Command driveDirectAngleCommand = m_SwerveSubsystem.driveFieldOriented(driveDirectAngle);
-		Command driveFieldCommand = m_SwerveSubsystem.driveFieldOriented(driveAngularVelocity);
 		m_SwerveSubsystem.resetOdometry(new Pose2d(3, 3, new Rotation2d(0)));
-		m_SwerveSubsystem.setDefaultCommand(driveFieldCommand);
+		m_SwerveSubsystem.setDefaultCommand(driveDirectAngleCommand);
 		m_driverController.a().onTrue(new InstantCommand(() -> System.out.println("it works")));
 	}
 
