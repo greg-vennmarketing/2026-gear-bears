@@ -30,17 +30,12 @@ public class SwerveSubsystem extends SubsystemBase{
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     }
 
-    @Override
-    public void periodic() {
-        System.out.println("I am happening periodically");
-    }
-
     public Command getDriveCommand(DoubleSupplier xTranslation, DoubleSupplier yTranslation, DoubleSupplier xHeading, DoubleSupplier yHeading) {
         return run(() -> {
             Translation2d velocity = SwerveMath.scaleTranslation(new Translation2d(
-                        xTranslation.getAsDouble(),
-                        yTranslation.getAsDouble()
-                    ), 0.8);
+                                                                                xTranslation.getAsDouble(),
+                                                                                yTranslation.getAsDouble()
+                                                                                ), 0.8);
             swerveDrive.driveFieldOriented(swerveDrive.swerveController.getTargetSpeeds(velocity.getX(), velocity.getY(),
                                                                                         xHeading.getAsDouble(),
                                                                                         yHeading.getAsDouble(),
