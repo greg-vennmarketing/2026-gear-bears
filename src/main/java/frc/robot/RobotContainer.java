@@ -5,17 +5,16 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.AlgaeArmSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import swervelib.SwerveInputStream;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -26,14 +25,17 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
-	private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 	private final SwerveSubsystem m_SwerveSubsystem = new SwerveSubsystem();
+	private final ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
+	private final AlgaeArmSubsystem m_ArmSubsystem = new AlgaeArmSubsystem();
 	SwerveInputStream driveAngularVelocity;
 	SwerveInputStream driveDirectAngle;
 	SwerveInputStream driveRobotOriented;
 
+
 	// Replace with CommandPS4Controller or CommandJoystick if needed
 	private final CommandXboxController m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+	private final XboxController m_mechanismController = new XboxController(OperatorConstants.kMechanismControllerPort);
 
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
 	public RobotContainer() {
@@ -74,9 +76,21 @@ public class RobotContainer {
 	 */
 	private void configureBindings() {
 		Command driveDirectAngleCommand = m_SwerveSubsystem.driveFieldOriented(driveDirectAngle);
-		m_SwerveSubsystem.resetOdometry(new Pose2d(3, 3, new Rotation2d(0)));
 		m_SwerveSubsystem.setDefaultCommand(driveDirectAngleCommand);
-		m_driverController.a().onTrue(new InstantCommand(() -> System.out.println("it works")));
+		m_driverController.a()
+							.whileTrue(new InstantCommand(() -> m_ArmSubsystem.forword()))
+							.onFalse(new InstantCommand(() -> m_ArmSubsystem.stop()));
+		
+		m_driverController.b()
+							.whileTrue(new InstantCommand(() -> m_ArmSubsystem.backword()))
+							.onFalse(new InstantCommand(() -> m_ArmSubsystem.stop()));
+		
+		new JoystickButton(m_mechanismController, XboxController.Button.kLeftBumper.value)
+													.whileTrue(new InstantCommand(() -> m_ShooterSubsystem.feed()))
+													.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stop()));
+		new JoystickButton(m_mechanismController, XboxController.Button.kRightBumper.value)
+													.whileTrue(new InstantCommand(() -> m_ShooterSubsystem.shoot()))
+													.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stop()));
 	}
 
 	/**
@@ -86,6 +100,6 @@ public class RobotContainer {
 	 */
 	public Command getAutonomousCommand() {
 		// An example command will be run in autonomous
-		return Autos.exampleAuto(m_exampleSubsystem);
+		return m_SwerveSubsystem.getAutonamasCommand("basicAuto");
 	}
 }
