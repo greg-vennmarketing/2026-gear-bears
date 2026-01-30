@@ -5,7 +5,9 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.GetAprilTagAngleCommand;
 import frc.robot.subsystems.AlgaeArmSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import swervelib.SwerveInputStream;
@@ -91,6 +93,11 @@ public class RobotContainer {
 		new JoystickButton(m_mechanismController, XboxController.Button.kRightBumper.value)
 													.whileTrue(new InstantCommand(() -> m_ShooterSubsystem.shoot()))
 													.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stop()));
+
+		// Bind to a button - get angle to tag ID 2 and print it
+		m_driverController.x()
+			.onTrue(new GetAprilTagAngleCommand(m_Limelight, 2,
+				(angle) -> System.out.println("Angle to tag 2: " + angle)));
 	}
 
 	/**
@@ -102,4 +109,8 @@ public class RobotContainer {
 		// An example command will be run in autonomous
 		return m_SwerveSubsystem.getAutonamasCommand("basicAuto");
 	}
+
+
+    // Add the subsystem
+    private final LimelightSubsystem m_Limelight = new LimelightSubsystem();
 }
